@@ -2,7 +2,7 @@ import { supabase } from "../db/supabase";
 
 exports.getAllTasks = async (req, res) => {
   try {
-    const { data, error } = await supabase.from("tasks").select("id, title, description, priority");
+    const { data, error } = await supabase.from("tasks").select("id, taskname, taskdescription, priority");
     if (error) {
       return res.status(500).json({ message: error.message });
     }
@@ -30,7 +30,10 @@ exports.getTaskById = async (req, res) => {
 exports.editTask = async (req, res) => {
   try {
     const taskId = req.params.id;
-    const { data: task, nameError } = await supabase.from("tasks").select("title").eq("id", taskId);
+    const { data: task, error: nameError } = await supabase.from("tasks").select("taskname").eq("id", taskId);
+    if (nameError) {
+      return res.status(500).json({ message: nameError.message });
+    }
     if (!task.length > 0) {
       return res.status(400).json({ message: "Task not found" });
     }
@@ -70,8 +73,17 @@ exports.addTask = async (req, res) => {
       if (!["completed", "pending", "not started"].includes(status)) {
         return res.status(400).json({ message: "Status must be 'completed', 'pending', or 'not started'" });
       }
+
+      const insertData = {
+        orgid: orgid,
+        userid: userid,
+        taskname: taskname,
+        priority: priority,
+        status: status,
+        duedate: duedate,
+      };
   
-      const { data, error } = await supabase.from("tasks").insert(req.body);
+      const { data, error } = await supabase.from("tasks").insert(insertData);
       if (error) {
         return res.status(500).json({ message: "Error adding task", error: error.message });
       }

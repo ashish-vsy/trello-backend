@@ -17,7 +17,7 @@ CREATE TABLE users (
     firstname VARCHAR(255) NOT NULL,
     lastname VARCHAR(255) NOT NULL,
     password VARCHAR(255) NOT NULL,
-    deleted_at TIMESTAMP DEFAULT NULL
+    deleted_at BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
