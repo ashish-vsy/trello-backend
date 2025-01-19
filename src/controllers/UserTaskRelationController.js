@@ -1,5 +1,5 @@
-import { supabase } from "../db/supabase";
-exports.addUserToTask = async (req, res) => {
+import { supabase } from "../db/supabase.js";
+export const addUserToTask = async (req, res) => {
     try {
         const { data, error } = await supabase
             .from('usertaskrelation')
@@ -14,7 +14,7 @@ exports.addUserToTask = async (req, res) => {
 }
 
 
-exports.getUserTasks = async (req, res) => {
+export const getUserTasks = async (req, res) => {
     try {
         const { data, error } = await supabase
             .from('usertaskrelation')

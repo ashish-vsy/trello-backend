@@ -1,6 +1,6 @@
-import { supabase } from "../db/supabase";
+import { supabase } from "../db/supabase.js";
 
-exports.getAllTasks = async (req, res) => {
+export const getAllTasks = async (req, res) => {
   try {
     const { data, error } = await supabase.from("tasks").select("id, taskname, taskdescription, priority");
     if (error) {
@@ -12,7 +12,7 @@ exports.getAllTasks = async (req, res) => {
   }
 };
 
-exports.getTaskById = async (req, res) => {
+export const getTaskById = async (req, res) => {
   try {
     const { data, error } = await supabase.from("tasks").select("*").eq("id", req.params.id);
     if (error) {
@@ -27,7 +27,7 @@ exports.getTaskById = async (req, res) => {
   }
 };
 
-exports.editTask = async (req, res) => {
+export const editTask = async (req, res) => {
   try {
     const taskId = req.params.id;
     const { data: task, error: nameError } = await supabase.from("tasks").select("taskname").eq("id", taskId);
@@ -56,7 +56,7 @@ exports.editTask = async (req, res) => {
   }
 };
 
-exports.addTask = async (req, res) => {
+export const addTask = async (req, res) => {
     try {
       const { orgid, userid, taskname, priority, status, duedate } = req.body;
   
@@ -93,7 +93,7 @@ exports.addTask = async (req, res) => {
     }
   };
 
-exports.deleteTask = async (req, res) => {
+export const deleteTask = async (req, res) => {
     try {
       const id  = req.params.id;
       if (!id) {

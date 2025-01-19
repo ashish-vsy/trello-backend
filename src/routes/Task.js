@@ -1,11 +1,11 @@
-const express = require('express');
+import express from 'express';  
 const taskRouter = express.Router();
-const TaskController = require('../controllers/TaskController')
+import {getAllTasks, getTaskById , addTask, editTask, deleteTask} from '../controllers/TaskController.js'
 
-taskRouter.get('/', TaskController.getAllTasks);
-taskRouter.get('/:id', TaskController.getTaskById);
-taskRouter.post('/', TaskController.addTask);
-taskRouter.put('/:id', TaskController.editTask);
-taskRouter.delete('/:id', TaskController.deleteTask);
+taskRouter.get('/', getAllTasks);
+taskRouter.get('/:id', getTaskById);
+taskRouter.post('/', addTask);
+taskRouter.put('/:id', editTask);
+taskRouter.delete('/:id', deleteTask);
 
-module.exports = taskRouter
+export {taskRouter}

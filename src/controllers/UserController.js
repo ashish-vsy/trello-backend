@@ -1,9 +1,9 @@
-import { supabase } from "../db/supabase";
-import { isValidEmail, isValidPassword } from "../utils";
-const bcrypt = require("bcrypt");
+import { supabase } from "../db/supabase.js";
+import { isValidEmail, isValidPassword } from "../utils.js";
+import bcrypt from "bcrypt";
 const saltRounds = 5;
 
-exports.UserSignUp = async (req, res) => {
+export const UserSignUp = async (req, res) => {
   try {
     const { firstname, lastname, email, password, profilecolor, orgId } = req.body;
     if (!firstname || !email || !password) {
@@ -46,7 +46,7 @@ exports.UserSignUp = async (req, res) => {
   }
 };
 
-exports.userLogin = async (req, res) => {
+export const userLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -96,7 +96,7 @@ exports.userLogin = async (req, res) => {
   }
 };
 
-exports.getAllUsers = async (req, res) => {
+export const getAllUsers = async (req, res) => {
   try {
     const { data, error } = await supabase.from("users").select("*");
     if (error) {
@@ -108,7 +108,7 @@ exports.getAllUsers = async (req, res) => {
   }
 };
 
-exports.getUserById = async (req, res) => {
+export const getUserById = async (req, res) => {
   try {
     const userId = req.params.id;
     if (!userId) {
@@ -128,7 +128,7 @@ exports.getUserById = async (req, res) => {
   }
 };
 
-exports.getUserByOrganizationId = async (req, res) => {
+export const getUserByOrganizationId = async (req, res) => {
   try {
     const orgId = req.params.orgid;
     if (!orgId) {
@@ -148,7 +148,7 @@ exports.getUserByOrganizationId = async (req, res) => {
   }
 };
 
-exports.editUser = async (req, res) => {
+export const editUser = async (req, res) => {
   try {
     const userId = req.params.id;
     if (!userId) {
@@ -181,7 +181,7 @@ exports.editUser = async (req, res) => {
   }
 };
 
-exports.deleteUser = async (req, res) => {
+export const deleteUser = async (req, res) => {
   try {
     const userId = req.params.id;
 

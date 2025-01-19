@@ -1,8 +1,8 @@
-const express = require('express');
+import express from 'express';  
 const userTaskRelationRouter = express.Router();
-const UserTaskRelationController = require('../controllers/UserTaskRelationController')
+import {addUserToTask} from '../controllers/UserTaskRelationController.js'
 
 
-userTaskRelationRouter.post('/', UserTaskRelationController.addUserToTask);
+userTaskRelationRouter.post('/', addUserToTask);
 
-module.exports = userTaskRelationRouter
+export {userTaskRelationRouter}

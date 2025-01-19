@@ -1,10 +1,10 @@
-const express = require('express');
+import express from 'express';  
 const organizationRouter = express.Router();    
 
-const OrganizationController = require('../controllers/OrganizationController') 
+import { getOrganizationById,addOrganization,editOrganization } from '../controllers/OrganizationController.js';
 
-organizationRouter.get('/:id', OrganizationController.getOrganizationById);
-organizationRouter.post('/', OrganizationController.addOrganization);
-organizationRouter.put('/:id', OrganizationController.editOrganization);
+organizationRouter.get('/:id', getOrganizationById);
+organizationRouter.post('/', addOrganization);
+organizationRouter.put('/:id', editOrganization);
 
-module.exports = organizationRouter
+export { organizationRouter}

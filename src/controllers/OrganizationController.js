@@ -1,8 +1,7 @@
-import { supabase } from "../db/supabase";
+import { supabase } from "../db/supabase.js";
 
-exports.getOrganizationById = async (req, res) => {
+export const getOrganizationById = async (req, res) => {
   try {
-
     const { data, error } = await supabase.from("organizations").select("*").eq("id", req.params.id);
     if (error) {
       return res.status(500).json({ message: error.message });
@@ -16,7 +15,7 @@ exports.getOrganizationById = async (req, res) => {
   }
 };
 
-exports.editOrganization = async (req, res) => {
+export const editOrganization = async (req, res) => {
   try {
 
     const orgId = req.params.id;
@@ -39,7 +38,7 @@ exports.editOrganization = async (req, res) => {
   }
 };
 
-exports.addOrganization = async (req, res) => {
+export const addOrganization = async (req, res) => {
   try {
     const { orgname } = req.body;
     if (!orgname) {
