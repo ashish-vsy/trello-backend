@@ -1,6 +1,3 @@
---Workflow Management database
-CREATE DATABASE workflowmanagement;
-
 -- Organization Table
 CREATE TABLE organization (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -25,7 +22,7 @@ CREATE TABLE users (
 CREATE TABLE tasks (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     orgid UUID NOT NULL REFERENCES organization (id) ON DELETE CASCADE,
-    userid UUID NOT NULL REFERENCES user (id) ON DELETE CASCADE,
+    userid UUID NOT NULL REFERENCES users (id) ON DELETE CASCADE,
     taskname VARCHAR(255) NOT NULL,
     taskdescription TEXT,
     priority VARCHAR(50) CHECK (priority IN ('high', 'medium', 'low')),
@@ -37,8 +34,8 @@ CREATE TABLE tasks (
 
 -- User Task Relation Table
 CREATE TABLE usertaskrelation (
-    relationid SERIAL PRIMARY KEY gen_random_uuid(),
-    taskid UUID NOT NULL REFERENCES task (id) ON DELETE CASCADE,
-    assinged_to UUID NOT NULL REFERENCES user (id) ON DELETE CASCADE,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    taskid UUID NOT NULL REFERENCES tasks (id) ON DELETE CASCADE,
+    assigned_to UUID NOT NULL REFERENCES users (id) ON DELETE CASCADE,
     assigned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
