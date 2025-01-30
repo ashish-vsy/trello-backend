@@ -88,3 +88,25 @@ export const addOrganization = async (req, res) => {
   }
 };
 
+export const verifyOrganization = async (req, res) => {
+  try {
+    const { orgname } = req.body;
+    if (!orgname) {
+      return res.status(400).json({ message: "Name is required" });
+    }
+    const { data, error } = await supabase.from("organization").select("*").eq("orgname", orgname);
+    if (error) {
+      return res.status(500).json({ message: error.message });
+    }
+    if(Object.keys(data).length === 0) {
+        return res.status(400).json({ message: "Organization not found" });
+    }
+    const data_to_return = {
+        id: data[0].id,
+        orgname: data[0].orgname
+    }
+    return res.status(200).json({ data: data_to_return });
+  } catch (error) {
+    return res.status(500).json({ message: 'Invalid Credentials' });
+  }
+}

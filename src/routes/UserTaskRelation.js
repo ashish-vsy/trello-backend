@@ -1,8 +1,9 @@
 import express from 'express';  
+import { VerifyToken } from '../middleware/middleware.js';
 const userTaskRelationRouter = express.Router();
-import {addUserToTask} from '../controllers/UserTaskRelationController.js'
 
+import { addUserToTask } from '../controllers/UserTaskRelationController.js';
 
-userTaskRelationRouter.post('/', addUserToTask);
+userTaskRelationRouter.post('/', VerifyToken, addUserToTask);
 
-export {userTaskRelationRouter}
+export { userTaskRelationRouter };

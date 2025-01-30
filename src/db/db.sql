@@ -1,7 +1,7 @@
 -- Organization Table
 CREATE TABLE organization (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    orgname VARCHAR(255) NOT NULL,
+    orgname VARCHAR(255) NOT NULL UNIQUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -10,12 +10,13 @@ CREATE TABLE users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     orgid UUID NOT NULL REFERENCES organization (id) ON DELETE CASCADE,
     profilecolor VARCHAR(255),
-    email VARCHAR(255) NOT NULL UNIQUE,
+    email VARCHAR(255) NOT NULL,
     firstname VARCHAR(255) NOT NULL,
     lastname VARCHAR(255) NOT NULL,
     password VARCHAR(255) NOT NULL,
     deleted_at BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (email, orgid)
 );
 
 -- Task Table

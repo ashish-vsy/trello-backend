@@ -2,19 +2,24 @@ import { supabase } from "../db/supabase.js";
 import { isValidEmail, isValidPassword } from "../utils.js";
 import bcrypt from "bcrypt";
 const saltRounds = 5;
+import jwt from "jsonwebtoken";
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 export const UserSignUp = async (req, res) => {
   try {
-    const recieved_data =  req.body;
+    const recieved_data = req.body;
     const firstname = recieved_data.firstname;
     const lastname = recieved_data.lastname;
     const email = recieved_data.email;
     const password = recieved_data.password;
     const profilecolor = recieved_data.profilecolor;
-    const orgId = recieved_data.orgid;
-    if (!firstname || !email || !password) {
-      return res.status(400).json({ message: "Firstname, email, and password are required" });
+    const orgName = recieved_data.orgName;
+    if (!firstname || !email || !password || !orgName) {
+      return res.status(400).json({ message: "Firstname, email, OrganizationName, and password are required" });
     }
+
     if (firstname.trim().length < 4) {
       return res.status(400).json({ message: "Firstname must be at least 4 characters long" });
     }
@@ -27,11 +32,28 @@ export const UserSignUp = async (req, res) => {
           "Password must be at least 6 characters long and contain at least one number and one special character",
       });
     }
+    const { data: existingOrg, error: orgerror } = await supabase
+      .from("organization")
+      .select("id")
+      .eq("orgname", orgName);
+    if (orgerror) {
+      return res.status(500).json({ message: "Error fetching organization", error: orgerror.message });
+    }
+    let orgid = null;
+    if (!existingOrg.length > 0) {
+      const { data: orgdata, insertError } = await supabase.from("organization").insert({ orgname: orgName }).select();
+      if (insertError) {
+        return res.status(500).json({ message: "Error creating organization", error: insertError.message });
+      }
+      orgid = orgdata[0].id;
+    } else {
+      orgid = existingOrg[0].id;
+    }
 
     const hasshedPassword = await bcrypt.hash(password, saltRounds);
 
     const insertData = {
-      orgid: orgId,
+      orgid: orgid,
       firstname: firstname,
       lastname: lastname || "",
       email: email,
@@ -41,7 +63,6 @@ export const UserSignUp = async (req, res) => {
     };
 
     const { data, error } = await supabase.from("users").insert(insertData).select();
-    console.log("backend return", data, error);
     if (error) {
       return res.status(500).json({ message: "Error signing up", error: error.message });
     }
@@ -53,26 +74,40 @@ export const UserSignUp = async (req, res) => {
       email: data[0].email,
       profilecolor: data[0].profilecolor,
       created_at: data[0].created_at,
-    }
+    };
+  
+
     return res.status(200).json({ message: "User signed up successfully", data: response_to_send });
   } catch (error) {
     return res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
+
+
+
+
 export const userLogin = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, orgname } = req.body;
 
-    if (!email || !password) {
-      return res.status(400).json({ message: "Email and password are required" });
+    if (!email || !password || !orgname) {
+      return res.status(400).json({ message: "Enter all required fields" });
     }
 
     if (!isValidEmail(email)) {
       return res.status(400).json({ message: "Invalid email address" });
     }
 
-    const { data, error } = await supabase.from("users").select("*").eq("email", email);
+    const { data: orgdata, orgerror } = await supabase.from("organization").select("id").eq("orgname", orgname);
+    if (orgerror) {
+      return res.status(500).json({ message: "Error fetching organization", error: orgerror.message });
+    }
+    if (!orgdata.length) {
+      return res.status(404).json({ message: `No organization found with name: ${orgname}` });
+    }
+
+    const { data, error } = await supabase.from("users").select("*").eq("email", email).eq("orgid", orgdata[0].id);
     if (error) {
       return res.status(500).json({ message: "Error fetching user", error: error.message });
     }
@@ -85,14 +120,7 @@ export const userLogin = async (req, res) => {
     if (!isValidPassword) {
       return res.status(401).json({ message: "Invalid email or password" });
     }
-    // const accessToken = jwt.sign(
-    //   {
-    //     id: user.id,
-    //     email: user.email,
-    //   },
-    //   process.env.JWT_SECRET,
-    //   { expiresIn: "1h" }
-    // );
+    
     const user_data = {
       id: user.id,
       orgid: user.orgid,
@@ -100,19 +128,29 @@ export const userLogin = async (req, res) => {
       lastname: user.lastname,
       email: user.email,
       profilecolor: user.profilecolor,
-    }
+    };
+
+    const token = jwt.sign({ type: "member", userid: user_data.id }, process.env.JWT_SECRET, { expiresIn: "1h" });
+
+  
+    const responseData = {
+      ...user_data, 
+      token: token  
+    };
+
     return res.status(200).json({
       message: "User logged in successfully",
-      data: user_data,
+      data: responseData,  
     });
   } catch (error) {
     return res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
+
 export const getAllUsers = async (req, res) => {
   try {
-    const orgid = req.params.id;
+    const orgid = req.query.orgid;
     if (!orgid) {
       return res.status(400).json({ message: "Organization ID is required" });
     }
@@ -127,8 +165,10 @@ export const getAllUsers = async (req, res) => {
       lastname: user.lastname,
       email: user.email,
       profilecolor: user.profilecolor,
-    }))
-    return res.status(200).json({ data: data_to_return });
+    }));
+
+
+    return res.status(200).json({ message: "User logged in successfully", data: data_to_return});
   } catch (error) {
     return res.status(500).json({ message: "Server error", error: error.message });
   }
@@ -148,14 +188,20 @@ export const getUserById = async (req, res) => {
     if (!data.length) {
       return res.status(404).json({ message: `No user found with ID: ${userId}` });
     }
+    const { data: orgname, orgerror } = await supabase
+      .from("organization")
+      .select("orgname")
+      .eq("id", data[0].orgid)
+      .select();
     const data_to_return = {
       id: data[0].id,
+      orgname: orgname[0].orgname,
       orgid: data[0].orgid,
       firstname: data[0].firstname,
       lastname: data[0].lastname,
       email: data[0].email,
       profilecolor: data[0].profilecolor,
-    }
+    };
     return res.status(200).json({ data: data_to_return });
   } catch (error) {
     return res.status(500).json({ message: "Server error", error: error.message });
@@ -216,13 +262,12 @@ export const updateUser = async (req, res) => {
       lastname: data[0].lastname,
       email: data[0].email,
       profilecolor: data[0].profilecolor,
-    }
+    };
     return res.status(200).json({ message: "User updated successfully", data: data_to_return });
   } catch (error) {
     return res.status(500).json({ message: "Server error", error: error.message });
   }
 };
-
 
 export const changePassword = async (req, res) => {
   try {
@@ -231,13 +276,13 @@ export const changePassword = async (req, res) => {
       return res.status(400).json({ message: "User ID is required" });
     }
 
-    const { oldPassword, newPassword } = req.body;
+    const { oldpassword, newpassword } = req.body;
 
-    if (!oldPassword || !newPassword) {
+    if (!oldpassword || !newpassword) {
       return res.status(400).json({ message: "Both old and new passwords are required" });
     }
 
-    if (!isValidPassword(newPassword)) {
+    if (!isValidPassword(newpassword)) {
       return res.status(400).json({
         message:
           "New password must be at least 6 characters long and contain at least one number and one special character",
@@ -254,12 +299,12 @@ export const changePassword = async (req, res) => {
 
     const userData = user[0];
 
-    const isOldPasswordValid = await bcrypt.compare(oldPassword, userData.password);
+    const isOldPasswordValid = await bcrypt.compare(oldpassword, userData.password);
     if (!isOldPasswordValid) {
       return res.status(400).json({ message: "Old password is incorrect" });
     }
 
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    const hashedPassword = await bcrypt.hash(newpassword, 10);
 
     const { data, error } = await supabase.from("users").update({ password: hashedPassword }).eq("id", userId);
 
@@ -273,14 +318,13 @@ export const changePassword = async (req, res) => {
       lastname: userData.lastname,
       email: userData.email,
       profilecolor: userData.profilecolor,
-    }
+    };
 
     return res.status(200).json({ message: "Password updated successfully", data: data_to_return });
   } catch (error) {
     return res.status(500).json({ message: "Server error", error: error.message });
   }
 };
-
 
 export const deleteUser = async (req, res) => {
   try {

@@ -10,8 +10,8 @@ import { userRouter } from './src/routes/User.js';
 import { taskRouter } from './src/routes/Task.js';
 import { userTaskRelationRouter } from './src/routes/UserTaskRelation.js';
 
-const PORT = process.env.PORT || 5000;
-const HOST = 'localhost';
+const PORT = process.env.PORT || 4000;
+const HOST = '0.0.0.0';
 
 const app = express();  
 

@@ -1,10 +1,11 @@
 import express from 'express';  
+import { getOrganizationById, addOrganization, updateOrganization } from '../controllers/OrganizationController.js';
+import { VerifyToken } from '../middleware/middleware.js'; 
+
 const organizationRouter = express.Router();    
 
-import { getOrganizationById,addOrganization, updateOrganization } from '../controllers/OrganizationController.js';
+organizationRouter.get('/:id', VerifyToken, getOrganizationById);
+organizationRouter.post('/add', VerifyToken, addOrganization);
+organizationRouter.put('/:id', VerifyToken, updateOrganization);
 
-organizationRouter.get('/:id', getOrganizationById);
-organizationRouter.post('/add', addOrganization);
-organizationRouter.put('/:id', updateOrganization);
-
-export { organizationRouter}
+export { organizationRouter };
