@@ -15,12 +15,18 @@ const HOST = '0.0.0.0';
 
 const app = express();  
 
-app.use(cors()); 
+
+
+const corsOptions = {
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+};
+
+app.use(cors(corsOptions)); 
+app.options('*', cors(corsOptions));
 app.use(bodyParser.json()); 
 app.use(bodyParser.urlencoded({ extended: true })); 
-
-
-
 
 app.use("/api/organization", organizationRouter);
 app.use("/api/user", userRouter);
